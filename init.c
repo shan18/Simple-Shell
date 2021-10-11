@@ -14,7 +14,7 @@
 
 #include "init.h"
 
-#define MAX_INPUT_BUFFER_SIZE 1001
+#define MAX_INPUT_BUFFER_SIZE 1000
 
 void show_prompt() {
     char *buffer;
@@ -39,17 +39,14 @@ void read_line(char *buffer) {
     buffer[buffer_counter] = '\0';
 }
 
-char **tokenize(char *line) {
+void tokenize(char *line, char *args[]) {
     int position = 0;
-    char **args = malloc((MAX_INPUT_BUFFER_SIZE / 2) * sizeof(char*));
-
     char *token = strtok_r(line, " ", &line);
     args[position++] = strdup(token);
     while ((token = strtok_r(line, " ", &line))) {
         args[position++] = strdup(token);
     }
-
-    return args;
+    args[position] = NULL;
 }
 
 void fix_cmd_path(char *command) {
@@ -61,7 +58,7 @@ void fix_cmd_path(char *command) {
     }
 }
 
-char **get_shell_input() {
+int get_shell_input(char *args[]) {
     char *line_input = malloc(sizeof(char) * MAX_INPUT_BUFFER_SIZE);
     if(!line_input) {
         fprintf(stderr, "Error: Cannot allocate buffer to read input. Exiting!\n");
@@ -72,13 +69,18 @@ char **get_shell_input() {
     read_line(line_input);
 
     if (line_input[0] == '\0') {
-        return NULL;
+        return 0;
     }
 
-    char **args = tokenize(line_input);
+    tokenize(line_input, args);
     fix_cmd_path(args[0]);
-    
-    free(line_input);
 
-    return args;
+    free(line_input);
+    return 1;
+}
+
+void clear_buffer(char *args[]) {        
+    for(int i = 0; args[i] != NULL; i++) {
+        args[i] = NULL;
+    }
 }

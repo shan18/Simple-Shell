@@ -8,22 +8,18 @@
 #include "init.h"
 #include "cmd.h"
 
-#define EXIT_SUCCESS 0
-#define EXIT_FALIURE -1
+#define MAX_INPUT_BUFFER_SIZE 1000
 
 int main() {
     int status;
-    char **args;
+    char *args[(MAX_INPUT_BUFFER_SIZE / 2) + 1];
 
     do {
-        args = get_shell_input();
-        if(args != NULL) {
+        if(get_shell_input(args)) {
             status = run_cmd(args);
         }
+        clear_buffer(args);
     } while (status);
 
-    // Free memory
-    free(args);
-
-    return EXIT_SUCCESS;
+    return 0;
 }

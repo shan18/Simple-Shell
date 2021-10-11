@@ -7,7 +7,7 @@
 #include "cmd.h"
 
 // Function declaration for builtin-commands
-int builtin_cd(char **args);
+int builtin_cd(char *args[]);
 int builtin_exit();
 
 char *builtin_str[] = {
@@ -15,7 +15,7 @@ char *builtin_str[] = {
     "exit"
 };
 
-int (*builtin_func[]) (char **) = {
+int (*builtin_func[]) (char *[]) = {
     &builtin_cd,
     &builtin_exit,
 };
@@ -24,7 +24,7 @@ int num_builtins() {
     return sizeof(builtin_str) / sizeof(char *);
 }
 
-int builtin_cd(char **args) {
+int builtin_cd(char *args[]) {
     int count;
     for(count = 0; args[count] != NULL; count++);
     if(count != 2) {
@@ -39,7 +39,7 @@ int builtin_exit() {
     return 0;
 }
 
-void execute_child(char **args) {
+void execute_child(char *args[]) {
     char *envp[] = {"PATH=/bin/", 0};
     char abs_cmd[100] = "/bin/";
     strcat(abs_cmd, args[0]);
@@ -54,7 +54,7 @@ void execute_child(char **args) {
     }
 }
 
-int run_external(char **args) {
+int run_external(char *args[]) {
     int status;
     if(fork()) {
         waitpid(-1, &status, 0);
@@ -64,7 +64,7 @@ int run_external(char **args) {
     return 1;
 }
 
-int run_cmd(char **args) {
+int run_cmd(char *args[]) {
     // Check builtin commands
     for (int i = 0; i < num_builtins(); i++) {
         if(strcmp(args[0], builtin_str[i]) == 0) {
