@@ -1,0 +1,5 @@
+.vscode/
+.prettierignore
+*.o
+nyush
+grading/
