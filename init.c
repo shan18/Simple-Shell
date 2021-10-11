@@ -53,7 +53,7 @@ int tokenize(char *line, char **args) {
         strcpy(args[position], token);
         position++;
     }
-    
+
     return position;
 }
 
@@ -66,7 +66,7 @@ void fix_cmd_path(char *command) {
     }
 }
 
-int get_shell_input(char **args, int max_buffer_size) {
+void get_shell_input(char **args, int max_buffer_size) {
     char *line_input = malloc(sizeof(char) * max_buffer_size);
     if(!line_input) {
         fprintf(stderr, "Error: Cannot allocate buffer to read input. Exiting!\n");
@@ -75,12 +75,11 @@ int get_shell_input(char **args, int max_buffer_size) {
 
     show_prompt();
     read_line(line_input, max_buffer_size);
-    int num_args = tokenize(line_input, args);
+    int num_tokens = tokenize(line_input, args);
     fix_cmd_path(args[0]);
+    args[num_tokens] = NULL;
 
     free(line_input);
-
-    return num_args;
 }
 
 void free_args(char **args, ...) {
