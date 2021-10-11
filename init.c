@@ -14,8 +14,7 @@
 
 #include "init.h"
 
-#define EXIT_SUCCESS 0
-#define EXIT_FALIURE -1
+#define MAX_INPUT_BUFFER_SIZE 1001
 
 void show_prompt() {
     char *buffer;
@@ -23,15 +22,15 @@ void show_prompt() {
         printf("[nyush %s]$ ", basename(buffer));
     } else {
         fprintf(stderr, "Error: Failed to fetch current directory. Exiting!\n");
-        exit(EXIT_FALIURE);
+        exit(-1);
     }
 }
 
-void read_line(char *buffer, int max_buffer_size) {
+void read_line(char *buffer) {
     int buffer_counter = 0;
     int input_character = getchar();
     while(input_character != EOF && input_character != '\n') {
-        if (buffer_counter < max_buffer_size - 1) {
+        if (buffer_counter < MAX_INPUT_BUFFER_SIZE - 1) {
             buffer[buffer_counter] = input_character;
             buffer_counter++;
         }
@@ -40,19 +39,17 @@ void read_line(char *buffer, int max_buffer_size) {
     buffer[buffer_counter] = '\0';
 }
 
-void tokenize(char *line, char **args) {
+char **tokenize(char *line) {
     int position = 0;
+    char **args = malloc((MAX_INPUT_BUFFER_SIZE / 2) * sizeof(char*));
+
     char *token = strtok_r(line, " ", &line);
-
-    args[position] = malloc((strlen(token) + 1) * sizeof(char));
-    strcpy(args[position], token);
-    position++;
-
+    args[position++] = strdup(token);
     while ((token = strtok_r(line, " ", &line))) {
-        args[position] = malloc((strlen(token) + 1) * sizeof(char));
-        strcpy(args[position], token);
-        position++;
+        args[position++] = strdup(token);
     }
+
+    return args;
 }
 
 void fix_cmd_path(char *command) {
@@ -64,32 +61,24 @@ void fix_cmd_path(char *command) {
     }
 }
 
-void get_shell_input(char **args, int max_buffer_size) {
-    char *line_input = malloc(sizeof(char) * max_buffer_size);
+char **get_shell_input() {
+    char *line_input = malloc(sizeof(char) * MAX_INPUT_BUFFER_SIZE);
     if(!line_input) {
         fprintf(stderr, "Error: Cannot allocate buffer to read input. Exiting!\n");
-        exit(EXIT_FALIURE);
+        exit(-1);
     }
 
     show_prompt();
-    read_line(line_input, max_buffer_size);
-    tokenize(line_input, args);
-    fix_cmd_path(args[0]);
+    read_line(line_input);
 
-    free(line_input);
-}
-
-void free_args(char **args, ...) {
-    va_list ptr;
-    va_start(ptr, args);
-
-    while(args) {
-        for(int i = 0; args[i] != NULL; ++i) {
-            free(args[i]);
-        }
-        free(args);
-        args = va_arg(ptr, char**);
+    if (line_input[0] == '\0') {
+        return NULL;
     }
 
-    va_end(ptr);
+    char **args = tokenize(line_input);
+    fix_cmd_path(args[0]);
+    
+    free(line_input);
+
+    return args;
 }
