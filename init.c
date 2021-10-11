@@ -40,7 +40,7 @@ void read_line(char *buffer, int max_buffer_size) {
     buffer[buffer_counter] = '\0';
 }
 
-int tokenize(char *line, char **args) {
+void tokenize(char *line, char **args) {
     int position = 0;
     char *token = strtok_r(line, " ", &line);
 
@@ -53,8 +53,6 @@ int tokenize(char *line, char **args) {
         strcpy(args[position], token);
         position++;
     }
-
-    return position;
 }
 
 void fix_cmd_path(char *command) {
@@ -75,9 +73,8 @@ void get_shell_input(char **args, int max_buffer_size) {
 
     show_prompt();
     read_line(line_input, max_buffer_size);
-    int num_tokens = tokenize(line_input, args);
+    tokenize(line_input, args);
     fix_cmd_path(args[0]);
-    args[num_tokens] = NULL;
 
     free(line_input);
 }

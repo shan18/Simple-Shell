@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "init.h"
+#include "cmd.h"
 
 #define MAX_INPUT_BUFFER_SIZE 1001
 #define EXIT_SUCCESS 0
@@ -20,6 +21,7 @@ int main() {
 
     do {
         get_shell_input(args, MAX_INPUT_BUFFER_SIZE);
+        run_cmd(args);
     } while (strcmp(args[0], "exit") != 0);
 
     // Free memory
