@@ -5,19 +5,26 @@
 #include <stdlib.h>
 
 #include "cmd.h"
+#include "validator.h"
 
 // Function declaration for builtin-commands
 int builtin_cd(char *args[]);
-int builtin_exit();
+int builtin_exit(char *args[]);
+int builtin_fg(char *args[]);
+int builtin_jobs(char *args[]);
 
 char *builtin_str[] = {
     "cd",
-    "exit"
+    "exit",
+    "fg",
+    "jobs"
 };
 
 int (*builtin_func[]) (char *[]) = {
     &builtin_cd,
     &builtin_exit,
+    &builtin_fg,
+    &builtin_jobs
 };
 
 int num_builtins() {
@@ -25,18 +32,29 @@ int num_builtins() {
 }
 
 int builtin_cd(char *args[]) {
-    int count;
-    for(count = 0; args[count] != NULL; count++);
-    if(count != 2) {
-        fprintf(stderr, "Error: invalid command\n");
-    } else {
-        if(chdir(args[1]) == -1) fprintf(stderr, "Error: invalid directory\n");
+    if(validate_num_args(args, 2) && chdir(args[1]) == -1) {
+        show_invalid_msg("Error: invalid directory\n");
     }
     return 1;
 }
 
-int builtin_exit() {
-    return 0;
+int builtin_exit(char *args[]) {
+    if(validate_num_args(args, 1)) return 0;
+    return 1;
+}
+
+int builtin_fg(char *args[]) {
+    if(validate_num_args(args, 2)) {
+        puts("#### Yet to implement");
+    }
+    return 1;
+}
+
+int builtin_jobs(char *args[]) {
+    if(validate_num_args(args, 1)) {
+        puts("#### Yet to implement");
+    }
+    return 1;
 }
 
 void execute_child(char *args[]) {
@@ -48,7 +66,7 @@ void execute_child(char *args[]) {
         strcpy(abs_cmd, "/usr/bin/");
         strcat(abs_cmd, args[0]);
         if(execve(abs_cmd, args, envp) == -1) {
-            fprintf(stderr, "Error: invalid program\n");
+            show_invalid();
             exit(-1);
         }
     }
