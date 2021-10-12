@@ -8,7 +8,7 @@ nyush: nyush.o init.o cmd.o validator.o
 
 nyush.o: nyush.c init.h cmd.h
 
-init.o: init.c init.h
+init.o: init.c init.h validator.h
 
 cmd.o: cmd.c cmd.h validator.h
 

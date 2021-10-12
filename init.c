@@ -13,6 +13,7 @@
 #include <stdarg.h>
 
 #include "init.h"
+#include "validator.h"
 
 #define MAX_INPUT_BUFFER_SIZE 1000
 
@@ -21,7 +22,7 @@ void show_prompt() {
     if ((buffer = getcwd(NULL, 0)) != NULL) {
         printf("[nyush %s]$ ", basename(buffer));
     } else {
-        fprintf(stderr, "Error: Failed to fetch current directory. Exiting!\n");
+        show_invalid_msg("Error: Failed to fetch current directory. Exiting!\n");
         exit(-1);
     }
 }
@@ -61,7 +62,7 @@ void fix_cmd_path(char *command) {
 int get_shell_input(char *args[]) {
     char *line_input = malloc(sizeof(char) * MAX_INPUT_BUFFER_SIZE);
     if(!line_input) {
-        fprintf(stderr, "Error: Cannot allocate buffer to read input. Exiting!\n");
+        show_invalid_msg("Error: Cannot allocate buffer to read input. Exiting!\n");
         exit(-1);
     }
 
@@ -74,9 +75,9 @@ int get_shell_input(char *args[]) {
 
     tokenize(line_input, args);
     fix_cmd_path(args[0]);
-
+    
     free(line_input);
-    return 1;
+    return validate_args(args);
 }
 
 void clear_buffer(char *args[]) {        
