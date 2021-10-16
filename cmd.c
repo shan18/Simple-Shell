@@ -110,3 +110,10 @@ int run_cmd(char *args[]) {
     // if (*args[0] == '/' || strstr(args[0], "./") == args[0]) {
     //     return;
 }
+
+int run_pipe_cmd(char *args[]) {
+    for(int i = 0; args[i] != NULL; i++) {
+        puts(args[i]);
+    }
+    return 1;
+}

@@ -14,16 +14,26 @@
 
 #define MAX_INPUT_BUFFER_SIZE 1000
 
+int check_pipe(char *args[]) {
+    for (int i = 0; args[i] != NULL; i++) {
+        if (args[i][0] == '|')
+            return 1;
+    }
+    return 0;
+}
+
 int main() {
-    int status;
+    int status = 0, shell_input_status = 0;
     char *args[(MAX_INPUT_BUFFER_SIZE / 2) + 1];
 
     do {
-        if(get_shell_input(args)) {
-            status = run_cmd(args);
+        shell_input_status = get_shell_input(args);
+        if(shell_input_status > 0) {
+            status = check_pipe(args) ? run_pipe_cmd(args) : run_cmd(args);
         }
         clear_buffer(args);
+        if (shell_input_status == -1)
+            break;
     } while (status);
-
     return 0;
 }

@@ -20,7 +20,7 @@ void show_prompt() {
     }
 }
 
-void read_line(char *buffer) {
+int read_line(char *buffer) {
     int buffer_counter = 0;
     int input_character = getchar();
     while(input_character != EOF && input_character != '\n') {
@@ -31,6 +31,11 @@ void read_line(char *buffer) {
         input_character = getchar();
     }
     buffer[buffer_counter] = '\0';
+
+    if (input_character == EOF)
+        return 0;
+    
+    return 1;
 }
 
 void tokenize(char *line, char *args[]) {
@@ -60,11 +65,14 @@ int get_shell_input(char *args[]) {
     }
 
     show_prompt();
-    read_line(line_input);
 
-    if (line_input[0] == '\0') {
+    int read_status = read_line(line_input);
+
+    if (!read_status)
+        return -1;
+    
+    if (line_input[0] == '\0')
         return 0;
-    }
 
     tokenize(line_input, args);
     fix_cmd_path(args[0]);
@@ -76,5 +84,11 @@ int get_shell_input(char *args[]) {
 void clear_buffer(char *args[]) {        
     for(int i = 0; args[i] != NULL; i++) {
         args[i] = NULL;
+    }
+}
+
+void duplicate_partial_args(char *args[], char *partial_args[], int sidx, int eidx) {
+    for (int i = sidx; eidx >= 0 ? i < eidx : args[i] != NULL; i++) {
+        partial_args[i - sidx] = strdup(args[i]);
     }
 }
