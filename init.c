@@ -1,10 +1,3 @@
-/* References
-    - https://stackoverflow.com/a/60058438/6562425
-    - https://www.geeksforgeeks.org/taking-string-input-space-c-3-different-methods/
-    - https://www.tutorialspoint.com/cprogramming/c_error_handling.htm
-    - https://stackoverflow.com/a/2328335/6562425
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
