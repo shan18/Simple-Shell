@@ -59,7 +59,7 @@ int builtin_jobs(char *args[]) {
 }
 
 void execute_child(char *args[]) {
-    char *envp[] = {"PATH=/bin/", 0};
+    char *envp[] = {"PATH=/bin/", "TERM=xterm-256color", 0};
     char abs_cmd[100] = "/bin/";
     strcat(abs_cmd, args[0]);
     if(execve(abs_cmd, args, envp) == -1) {
@@ -74,12 +74,10 @@ void execute_child(char *args[]) {
 }
 
 int run_external(char *args[]) {
-    int status;
-    if(fork()) {
-        waitpid(-1, &status, 0);
-    } else {
+    if(fork())
+        waitpid(-1, NULL, 0);
+    else
         execute_child(args);
-    }
     return 1;
 }
 
@@ -89,7 +87,7 @@ int replace_stdio(char *std_fn, char *stdtype) {
         stdio_fd = dup(STDOUT_FILENO);
         io_redirect = stdtype[strlen(stdtype) - 1] == 't' ? open(std_fn, O_CREAT | O_TRUNC | O_WRONLY) : open(std_fn, O_CREAT | O_APPEND | O_WRONLY);
         dup2(io_redirect, STDOUT_FILENO);
-        dup2(io_redirect, STDERR_FILENO);
+        dup2(io_redirect, STDERR_FILENO);  // Not required
     } else if(strcmp(stdtype, "stdin") == 0) {
         stdio_fd = dup(STDIN_FILENO);
         if ((io_redirect = open(std_fn, O_RDONLY)) == -1) {

@@ -4,6 +4,7 @@
     - https://www.tutorialspoint.com/cprogramming/c_error_handling.htm
     - https://stackoverflow.com/a/2328335/6562425
     - https://brennan.io/2015/01/16/write-a-shell-in-c/
+    - https://people.cs.pitt.edu/~khalifa/cs449/spr07/Assigns/Assign4/myshell.c
     - https://youtu.be/PIb2aShU_H4
 */
 
