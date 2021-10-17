@@ -11,7 +11,18 @@
 
 #define MAX_INPUT_BUFFER_SIZE 1000
 
+char *SUSPENDED_JOBS[100];
+int SUSPENDED_PIDS[100];
+int SUSPENDED_JOB_COUNTER = 0;
+char *CURRENT_JOB;
+int CURRENT_PID = -1;
+
 void signal_handler(int sigid) {
+    if ((sigid == SIGTSTP || sigid == SIGSTOP) && CURRENT_PID >= 0) {
+        SUSPENDED_JOBS[SUSPENDED_JOB_COUNTER] = CURRENT_JOB;
+        SUSPENDED_PIDS[SUSPENDED_JOB_COUNTER] = CURRENT_PID;
+        SUSPENDED_JOB_COUNTER++;
+    }
     signal(sigid, signal_handler);
 }
 
@@ -47,21 +58,40 @@ int builtin_cd(char *args[]) {
 }
 
 int builtin_exit(char *args[]) {
-    if(validate_num_args(args, 1))
-        exit(0);
+    if(validate_num_args(args, 1)) {
+        SUSPENDED_JOB_COUNTER > 0 ? show_invalid_msg("there are suspended jobs") : exit(0);
+    }
     return 1;
 }
 
 int builtin_fg(char *args[]) {
     if(validate_num_args(args, 2)) {
-        return 1;
+        int job_idx = atoi(args[1]) - 1;
+        if (job_idx < 0 || job_idx >= SUSPENDED_JOB_COUNTER)
+            show_invalid_msg("invalid job");
+        else {
+            int pid = SUSPENDED_PIDS[job_idx];
+            char *job_name = SUSPENDED_JOBS[job_idx];
+            for(int i = job_idx + 1; i < SUSPENDED_JOB_COUNTER; i++) {
+                SUSPENDED_PIDS[i - 1] = SUSPENDED_PIDS[i];
+                SUSPENDED_JOBS[i - 1] = strdup(SUSPENDED_JOBS[i]);
+            }
+            SUSPENDED_JOB_COUNTER--;
+            kill(pid, SIGCONT);
+            CURRENT_PID = pid;
+            CURRENT_JOB = strdup(job_name);
+            waitpid(pid, NULL, WUNTRACED);
+            CURRENT_PID = -1;
+        }
     }
     return 1;
 }
 
 int builtin_jobs(char *args[]) {
     if(validate_num_args(args, 1)) {
-        return 1;
+        for(int i = 0; i < SUSPENDED_JOB_COUNTER; i++) {
+            printf("[%d] %s\n", i + 1, SUSPENDED_JOBS[i]);
+        }
     }
     return 1;
 }
@@ -90,13 +120,22 @@ void execute_child(char *args[]) {
 
 int run_external(char *args[]) {
     int pid = fork();
+    if (pid < 0)
+        return 1;
+    
+    CURRENT_PID = pid;
+
     if(pid == 0)
         execute_child(args);
     waitpid(pid, NULL, WUNTRACED);
+
+    CURRENT_PID = -1;
     return 1;
 }
 
 int run_cmd(char line_input[]) {
+    CURRENT_JOB = strdup(line_input);
+
     char *args[MAX_INPUT_BUFFER_SIZE];
     tokenize(line_input, " ", args);
     
@@ -130,6 +169,8 @@ int run_cmd(char line_input[]) {
 }
 
 int run_pipe_cmd(char line_input[]) {
+    CURRENT_JOB = strdup(line_input);
+
     if(!validate_pipe_line(line_input))
         return 1;
 
@@ -162,6 +203,8 @@ int run_pipe_cmd(char line_input[]) {
         if (pids[i] < 0)
             break;
         
+        CURRENT_PID = pids[i];
+        
         if (pids[i] > 0)
             processes_started++;
         else if (pids[i] == 0) {
@@ -192,6 +235,8 @@ int run_pipe_cmd(char line_input[]) {
 
     for(int i = 0; i < processes_started; i++)
         waitpid(pids[i], NULL, WUNTRACED);
+    
+    CURRENT_PID = -1;
     
     return 1;
 }
