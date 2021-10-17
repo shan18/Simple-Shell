@@ -131,12 +131,22 @@ int run_pipe_cmd(char line_input[]) {
 
     for(int i = 0; cmds[i] != NULL; i++) {
         tokenize(cmds[i], " ", args);
-        if (pipe(fd[i]) == -1) {
-            return 0;
+        if(!validate_args(args) || !validate_pipe_args(args, i, pc + 1) || pipe(fd[i]) == -1) {
+            for(int j = 0; j < i; j++) {
+                close(fd[j][0]);
+                close(fd[j][1]);
+            }
+            return 1;
         }
         pids[i] = fork();
         if (pids[i] < 0) {
-            return -1;
+            for(int j = 0; j <= i && j < pc; j++) {
+                close(fd[j][0]);
+                close(fd[j][1]);
+            }
+            for(int j = 0; j < i; j++)
+                waitpid(pids[j], NULL, 0);
+            return 0;
         }
         if (pids[i] == 0) {
             if (i > 0)
