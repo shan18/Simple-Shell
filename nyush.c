@@ -25,11 +25,11 @@ int check_pipe(char line_input[]) {
 }
 
 int main() {
-    signal(SIGTSTP, SIG_IGN);
-    signal(SIGINT, SIG_IGN);
-    signal(SIGQUIT, SIG_IGN);
-    signal(SIGTERM, SIG_IGN);
-    
+    signal(SIGTSTP, signal_handler);
+    signal(SIGINT, signal_handler);
+    signal(SIGQUIT, signal_handler);
+    signal(SIGTERM, signal_handler);
+
     int status = 1, shell_input_status = 0;
     char line_input[MAX_INPUT_BUFFER_SIZE];
 
@@ -42,6 +42,6 @@ int main() {
         if (shell_input_status == -1)
             break;
     } while (status);
-    printf("\n");
+    puts("");
     return 0;
 }

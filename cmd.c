@@ -11,6 +11,10 @@
 
 #define MAX_INPUT_BUFFER_SIZE 1000
 
+void signal_handler(int sigid) {
+    signal(sigid, signal_handler);
+}
+
 // Function declaration for builtin-commands
 int builtin_cd(char *args[]);
 int builtin_exit(char *args[]);
@@ -88,7 +92,7 @@ int run_external(char *args[]) {
     int pid = fork();
     if(pid == 0)
         execute_child(args);
-    waitpid(pid, NULL, 0);
+    waitpid(pid, NULL, WUNTRACED);
     return 1;
 }
 
@@ -187,7 +191,7 @@ int run_pipe_cmd(char line_input[]) {
     }
 
     for(int i = 0; i < processes_started; i++)
-        waitpid(pids[i], NULL, 0);
+        waitpid(pids[i], NULL, WUNTRACED);
     
     return 1;
 }
