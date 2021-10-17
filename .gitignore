@@ -3,4 +3,5 @@
 *.o
 nyush
 grading/
+ngrading/
 execute.sh

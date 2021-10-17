@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "cmd.h"
+#include "init.h"
 #include "io.h"
 #include "validator.h"
 
@@ -81,7 +82,14 @@ int run_external(char *args[]) {
     return 1;
 }
 
-int run_cmd(char *args[]) {
+int run_cmd(char line_input[]) {
+    char *args[500];
+    tokenize(line_input, args);
+    
+    // free(line_input);
+    if(!validate_args(args))
+        return 1;
+
     // Run builtin commands
     for (int i = 0; i < num_builtins(); i++) {
         if(strcmp(args[0], builtin_str[i]) == 0) {
@@ -111,9 +119,10 @@ int run_cmd(char *args[]) {
     //     return;
 }
 
-int run_pipe_cmd(char *args[]) {
-    for(int i = 0; args[i] != NULL; i++) {
-        puts(args[i]);
-    }
+int run_pipe_cmd(char line_input[]) {
+    // for(int i = 0; args[i] != NULL; i++) {
+    //     puts(args[i]);
+    // }
+    puts(line_input);
     return 1;
 }

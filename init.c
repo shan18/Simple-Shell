@@ -38,14 +38,14 @@ int read_line(char *buffer) {
     return 1;
 }
 
-void tokenize(char *line, char *args[]) {
-    int position = 0;
-    char *token = strtok_r(line, " ", &line);
-    args[position++] = strdup(token);
-    while ((token = strtok_r(line, " ", &line))) {
-        args[position++] = strdup(token);
-    }
-    args[position] = NULL;
+int get_shell_input(char *line_input) {
+    show_prompt();
+    int read_status = read_line(line_input);
+    if (!read_status)
+        return -1;
+    if (line_input[0] == '\0')
+        return 0;
+    return 1;
 }
 
 void fix_cmd_path(char *command) {
@@ -57,38 +57,19 @@ void fix_cmd_path(char *command) {
     }
 }
 
-int get_shell_input(char *args[]) {
-    char *line_input = malloc(sizeof(char) * MAX_INPUT_BUFFER_SIZE);
-    if(!line_input) {
-        show_invalid_msg("Error: Cannot allocate buffer to read input. Exiting!\n");
-        exit(-1);
+void tokenize(char *line, char *args[]) {
+    int position = 0;
+    char *token = strtok_r(line, " ", &line);
+    args[position++] = strdup(token);
+    while ((token = strtok_r(line, " ", &line))) {
+        args[position++] = strdup(token);
     }
-
-    show_prompt();
-
-    int read_status = read_line(line_input);
-
-    if (!read_status)
-        return -1;
-    
-    if (line_input[0] == '\0')
-        return 0;
-
-    tokenize(line_input, args);
+    args[position] = NULL;
     fix_cmd_path(args[0]);
-    
-    free(line_input);
-    return validate_args(args);
 }
 
-void clear_buffer(char *args[]) {        
-    for(int i = 0; args[i] != NULL; i++) {
-        args[i] = NULL;
-    }
-}
-
-void duplicate_partial_args(char *args[], char *partial_args[], int sidx, int eidx) {
-    for (int i = sidx; eidx >= 0 ? i < eidx : args[i] != NULL; i++) {
-        partial_args[i - sidx] = strdup(args[i]);
+void clear_buffer(char *buffer) {        
+    for(int i = 0; buffer[i] != '\0'; i++) {
+        buffer[i] = '\0';
     }
 }
