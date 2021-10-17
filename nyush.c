@@ -10,6 +10,7 @@
 */
 
 #include <stdio.h>
+#include <signal.h>
 #include "init.h"
 #include "cmd.h"
 
@@ -24,7 +25,12 @@ int check_pipe(char line_input[]) {
 }
 
 int main() {
-    int status = 0, shell_input_status = 0;
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGINT, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGTERM, SIG_IGN);
+    
+    int status = 1, shell_input_status = 0;
     char line_input[MAX_INPUT_BUFFER_SIZE];
 
     do {
@@ -36,5 +42,6 @@ int main() {
         if (shell_input_status == -1)
             break;
     } while (status);
+    printf("\n");
     return 0;
 }

@@ -14,8 +14,9 @@ void show_prompt() {
     char *buffer;
     if ((buffer = getcwd(NULL, 0)) != NULL) {
         printf("[nyush %s]$ ", basename(buffer));
+        fflush(stdout);
     } else {
-        show_invalid_msg("Error: Failed to fetch current directory. Exiting!\n");
+        show_invalid_msg("Failed to fetch current directory. Exiting!");
         exit(-1);
     }
 }

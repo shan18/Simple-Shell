@@ -6,5 +6,6 @@ void show_invalid_msg(char *msg);
 int validate_num_args(char *args[], int num);
 int validate_args(char *args[]);
 int validate_pipe_args(char *args[], int idx, int max_len);
+int validate_pipe_line(char *line);
 
 #endif

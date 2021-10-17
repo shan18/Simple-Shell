@@ -16,7 +16,7 @@ int replace_stdio(char *std_fn, char *stdtype) {
     } else if(strcmp(stdtype, "stdin") == 0) {
         stdio_fd = dup(STDIN_FILENO);
         if ((io_redirect = open(std_fn, O_RDONLY)) == -1) {
-            show_invalid_msg("Error: invalid file\n");
+            show_invalid_msg("invalid file");
             return -2;
         }
         dup2(io_redirect, STDIN_FILENO);

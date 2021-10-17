@@ -10,7 +10,7 @@ void show_invalid() {
 }
 
 void show_invalid_msg(char *msg) {
-    fprintf(stderr, "%s", msg);
+    fprintf(stderr, "Error: %s\n", msg);
 }
 
 int validate_num_args(char *args[], int num) {
@@ -78,6 +78,26 @@ int validate_pipe_args(char *args[], int idx, int max_len) {
     }
 
     if (idx < max_len - 1 && (detect_single_count(args, TERMINALS[1]) || detect_single_count(args, TERMINALS[2]))) {
+        show_invalid();
+        return 0;
+    }
+
+    return 1;
+}
+
+int validate_pipe_line(char *line) {
+    int start, end;
+    
+    // Check if line begins with |
+    for(start = 0; line[start] == ' '; start++);
+    if(line[start] == '|') {
+        show_invalid();
+        return 0;
+    }
+
+    // Check if line ends with |
+    for(end = strlen(line) - 1; line[end] == ' '; end--);
+    if(line[end] == '|') {
         show_invalid();
         return 0;
     }
