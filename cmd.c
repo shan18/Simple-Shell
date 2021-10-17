@@ -129,23 +129,7 @@ int run_pipe_cmd(char line_input[]) {
     // Tokenize with pipe
     tokenize(line_input, "|", cmds);
 
-    tokenize(cmds[0], " ", args);
-    if (pipe(fd[0]) == -1) {
-        return 0;
-    }
-    pids[0] = fork();
-    if (pids[0] < 0) {
-        return -1;
-    }
-    if (pids[0] == 0) {
-        dup2(fd[0][1], STDOUT_FILENO);
-        close(fd[0][0]);
-        close(fd[0][1]);
-        execute_child(args);
-    }
-    clear_buffer(args);
-
-    for(int i = 1; cmds[i + 1] != NULL; i++) {
+    for(int i = 0; cmds[i] != NULL; i++) {
         tokenize(cmds[i], " ", args);
         if (pipe(fd[i]) == -1) {
             return 0;
@@ -155,9 +139,11 @@ int run_pipe_cmd(char line_input[]) {
             return -1;
         }
         if (pids[i] == 0) {
-            dup2(fd[i - 1][0], STDIN_FILENO);
-            dup2(fd[i][1], STDOUT_FILENO);
-            for(int j = 0; j < i + 1; j++) {
+            if (i > 0)
+                dup2(fd[i - 1][0], STDIN_FILENO);
+            if (i < pc)
+                dup2(fd[i][1], STDOUT_FILENO);
+            for(int j = 0; j <= i && j < pc; j++) {
                 close(fd[j][0]);
                 close(fd[j][1]);
             }
@@ -165,21 +151,6 @@ int run_pipe_cmd(char line_input[]) {
         }
         clear_buffer(args);
     }
-
-    tokenize(cmds[pc], " ", args);
-    pids[pc] = fork();
-    if (pids[pc] < 0) {
-        return -1;
-    }
-    if (pids[pc] == 0) {
-        dup2(fd[pc - 1][0], STDIN_FILENO);
-        for(int i = 0; i < pc; i++) {
-            close(fd[i][0]);
-            close(fd[i][1]);
-        }
-        execute_child(args);
-    }
-    clear_buffer(args);
 
     for(int i = 0; i < pc; i++) {
         close(fd[i][0]);
