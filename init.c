@@ -20,7 +20,7 @@ void show_prompt() {
     }
 }
 
-int read_line(char *buffer) {
+int read_line(char buffer[]) {
     int buffer_counter = 0;
     int input_character = getchar();
     while(input_character != EOF && input_character != '\n') {
@@ -38,7 +38,7 @@ int read_line(char *buffer) {
     return 1;
 }
 
-int get_shell_input(char *line_input) {
+int get_shell_input(char line_input[]) {
     show_prompt();
     int read_status = read_line(line_input);
     if (!read_status)
@@ -46,6 +46,12 @@ int get_shell_input(char *line_input) {
     if (line_input[0] == '\0')
         return 0;
     return 1;
+}
+
+int get_pipe_count(char line_input[]) {
+    int i, count;
+    for (i = 0, count = 0; line_input[i] != '\0'; line_input[i] == '|' ? count++ : 0, i++);
+    return count;
 }
 
 void fix_cmd_path(char *command) {
@@ -57,19 +63,23 @@ void fix_cmd_path(char *command) {
     }
 }
 
-void tokenize(char *line, char *args[]) {
+void tokenize(char *line, char *delimiter, char *args[]) {
     int position = 0;
-    char *token = strtok_r(line, " ", &line);
+    char *token = strtok_r(line, delimiter, &line);
     args[position++] = strdup(token);
-    while ((token = strtok_r(line, " ", &line))) {
+    while ((token = strtok_r(line, delimiter, &line))) {
         args[position++] = strdup(token);
     }
     args[position] = NULL;
     fix_cmd_path(args[0]);
 }
 
-void clear_buffer(char *buffer) {        
-    for(int i = 0; buffer[i] != '\0'; i++) {
-        buffer[i] = '\0';
-    }
+void clear_line_buffer(char *line_buffer) {
+    for (int i = 0; line_buffer[i] != '\0'; i++)
+        line_buffer[i] = '\0';
+}
+
+void clear_buffer(char *buffer[]) {
+    for (int i = 0; buffer[i] != NULL; i++)
+        buffer[i] = NULL;
 }

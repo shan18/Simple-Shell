@@ -9,6 +9,8 @@
 #include "io.h"
 #include "validator.h"
 
+#define MAX_INPUT_BUFFER_SIZE 1000
+
 // Function declaration for builtin-commands
 int builtin_cd(char *args[]);
 int builtin_exit(char *args[]);
@@ -61,7 +63,7 @@ int builtin_jobs(char *args[]) {
 
 void execute_child(char *args[]) {
     char *envp[] = {"PATH=/bin/", "TERM=xterm-256color", 0};
-    char abs_cmd[100] = "/bin/";
+    char abs_cmd[100] = "/bin/";  // TODO: See this 100 size
     strcat(abs_cmd, args[0]);
     if(execve(abs_cmd, args, envp) == -1) {
         envp[0] = "PATH=/usr/bin/";
@@ -83,8 +85,8 @@ int run_external(char *args[]) {
 }
 
 int run_cmd(char line_input[]) {
-    char *args[500];
-    tokenize(line_input, args);
+    char *args[MAX_INPUT_BUFFER_SIZE];
+    tokenize(line_input, " ", args);
     
     // free(line_input);
     if(!validate_args(args))
@@ -120,9 +122,18 @@ int run_cmd(char line_input[]) {
 }
 
 int run_pipe_cmd(char line_input[]) {
-    // for(int i = 0; args[i] != NULL; i++) {
-    //     puts(args[i]);
-    // }
-    puts(line_input);
+    int pc = get_pipe_count(line_input);
+    printf("%d\n", pc);
+    // int pids[pc + 1], fds[pc][2];
+    char *cmds[(MAX_INPUT_BUFFER_SIZE / 2) + 1];
+
+    // Tokenize with pipe
+    tokenize(line_input, "|", cmds);
+
+    // Loop through pipe occurances
+    for(int i = 0; cmds[i] != NULL; i++) {
+        puts(cmds[i]);
+    }
+
     return 1;
 }

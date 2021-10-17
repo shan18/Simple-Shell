@@ -31,7 +31,7 @@ int main() {
         if(shell_input_status > 0) {
             status = check_pipe(line_input) ? run_pipe_cmd(line_input) : run_cmd(line_input);
         }
-        clear_buffer(line_input);
+        clear_line_buffer(line_input);
         if (shell_input_status == -1)
             break;
     } while (status);
