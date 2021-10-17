@@ -62,16 +62,23 @@ int builtin_jobs(char *args[]) {
 }
 
 void execute_child(char *args[]) {
-    char *envp[] = {"PATH=/bin/", "TERM=xterm-256color", 0};
-    char abs_cmd[100] = "/bin/";  // TODO: See this 100 size
-    strcat(abs_cmd, args[0]);
-    if(execve(abs_cmd, args, envp) == -1) {
-        envp[0] = "PATH=/usr/bin/";
-        strcpy(abs_cmd, "/usr/bin/");
-        strcat(abs_cmd, args[0]);
-        if(execve(abs_cmd, args, envp) == -1) {
+    if(strstr(args[0], "./") == args[0]) {
+        if(execv(args[0], args) == -1) {
             show_invalid();
             exit(-1);
+        }
+    } else {
+        char *envp[] = {"PATH=/bin/", "TERM=xterm-256color", 0};
+        char abs_cmd[100] = "/bin/";  // TODO: See this 100 size
+        strcat(abs_cmd, args[0]);
+        if(execve(abs_cmd, args, envp) == -1) {
+            envp[0] = "PATH=/usr/bin/";
+            strcpy(abs_cmd, "/usr/bin/");
+            strcat(abs_cmd, args[0]);
+            if(execve(abs_cmd, args, envp) == -1) {
+                show_invalid();
+                exit(-1);
+            }
         }
     }
 }
@@ -116,9 +123,6 @@ int run_cmd(char line_input[]) {
         restore_stdio(stdout_fd, "stdout");
 
     return status;
-    
-    // if (*args[0] == '/' || strstr(args[0], "./") == args[0]) {
-    //     return;
 }
 
 int run_pipe_cmd(char line_input[]) {
