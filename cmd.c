@@ -122,7 +122,7 @@ int run_cmd(char line_input[]) {
 }
 
 int run_pipe_cmd(char line_input[]) {
-    int pc = get_pipe_count(line_input);
+    int pc = get_pipe_count(line_input), pipes_opened = 0, processes_started = 0;
     int pids[pc + 1], fd[pc][2];
     char *cmds[pc + 2], *args[(MAX_INPUT_BUFFER_SIZE / 2) + 1];
 
@@ -131,24 +131,29 @@ int run_pipe_cmd(char line_input[]) {
 
     for(int i = 0; cmds[i] != NULL; i++) {
         tokenize(cmds[i], " ", args);
-        if(!validate_args(args) || !validate_pipe_args(args, i, pc + 1) || pipe(fd[i]) == -1) {
-            for(int j = 0; j < i; j++) {
-                close(fd[j][0]);
-                close(fd[j][1]);
-            }
-            return 1;
+        if(!validate_args(args) || !validate_pipe_args(args, i, pc + 1))
+            break;  // TODO: fix bug where "cat | cat < input.txt" gives blank line on second command
+
+        if(i < pc) {
+            pipes_opened++;
+            if(pipe(fd[i]) == -1)
+                break;
         }
+
+        // Check for io redirection
+        int stdin_fd = input_redirection(args);
+        int stdout_fd = output_redirection(args);
+
+        if (stdin_fd == -2 || stdout_fd == -2)
+            break;
+
         pids[i] = fork();
-        if (pids[i] < 0) {
-            for(int j = 0; j <= i && j < pc; j++) {
-                close(fd[j][0]);
-                close(fd[j][1]);
-            }
-            for(int j = 0; j < i; j++)
-                waitpid(pids[j], NULL, 0);
-            return 0;
-        }
-        if (pids[i] == 0) {
+        if (pids[i] < 0)
+            break;
+        
+        if (pids[i] > 0)
+            processes_started++;
+        else if (pids[i] == 0) {
             if (i > 0)
                 dup2(fd[i - 1][0], STDIN_FILENO);
             if (i < pc)
@@ -159,15 +164,22 @@ int run_pipe_cmd(char line_input[]) {
             }
             execute_child(args);
         }
+
+        // Restore redirected io
+        if (stdin_fd >= 0)
+            restore_stdio(stdin_fd, "stdin");
+        if (stdout_fd >= 0)
+            restore_stdio(stdout_fd, "stdout");
+        
         clear_buffer(args);
     }
 
-    for(int i = 0; i < pc; i++) {
+    for(int i = 0; i < pipes_opened; i++) {
         close(fd[i][0]);
         close(fd[i][1]);
     }
 
-    for(int i = 0; i < pc + 1; i++)
+    for(int i = 0; i < processes_started; i++)
         waitpid(pids[i], NULL, 0);
     
     return 1;

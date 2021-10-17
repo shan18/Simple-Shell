@@ -77,7 +77,7 @@ int validate_pipe_args(char *args[], int idx, int max_len) {
         return 0;
     }
 
-    if (idx < max_len && (detect_single_count(args, TERMINALS[1]) || detect_single_count(args, TERMINALS[2]))) {
+    if (idx < max_len - 1 && (detect_single_count(args, TERMINALS[1]) || detect_single_count(args, TERMINALS[2]))) {
         show_invalid();
         return 0;
     }
