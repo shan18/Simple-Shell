@@ -104,7 +104,7 @@ void execute_child(char *args[]) {
         }
     } else {
         char *envp[] = {"PATH=/bin/", "TERM=xterm-256color", 0};
-        char abs_cmd[100] = "/bin/";  // TODO: See this 100 size
+        char abs_cmd[MAX_INPUT_BUFFER_SIZE] = "/bin/";
         strcat(abs_cmd, args[0]);
         if(execve(abs_cmd, args, envp) == -1) {
             envp[0] = "PATH=/usr/bin/";

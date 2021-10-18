@@ -7,6 +7,7 @@
     - https://people.cs.pitt.edu/~khalifa/cs449/spr07/Assigns/Assign4/myshell.c
     - https://youtu.be/PIb2aShU_H4
     - https://www.youtube.com/watch?v=6xbLgZpOBi8
+    - Students Referenced: Rakhee (N15260239)
 */
 
 #include <stdio.h>
