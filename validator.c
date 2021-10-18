@@ -4,6 +4,7 @@
 #include "validator.h"
 
 const char *TERMINALS[] = {"<", ">", ">>", NULL}; 
+const char *BUILTINS[] = {"cd", "jobs", "fg", "exit", NULL};
 
 void show_invalid() {
     fprintf(stderr, "Error: invalid command\n");
@@ -71,20 +72,6 @@ int validate_args(char *args[]) {
     return 1;
 }
 
-int validate_pipe_args(char *args[], int idx, int max_len) {
-    if (idx > 0 && detect_single_count(args, TERMINALS[0])) {
-        show_invalid();
-        return 0;
-    }
-
-    if (idx < max_len - 1 && (detect_single_count(args, TERMINALS[1]) || detect_single_count(args, TERMINALS[2]))) {
-        show_invalid();
-        return 0;
-    }
-
-    return 1;
-}
-
 int validate_pipe_line(char *line) {
     int start, end;
     
@@ -102,5 +89,29 @@ int validate_pipe_line(char *line) {
         return 0;
     }
 
+    return 1;
+}
+
+int validate_pipe_args(char *args[], int idx, int max_len) {
+    if (idx > 0 && detect_single_count(args, TERMINALS[0])) {
+        show_invalid();
+        return 0;
+    }
+
+    if (idx < max_len - 1 && (detect_single_count(args, TERMINALS[1]) || detect_single_count(args, TERMINALS[2]))) {
+        show_invalid();
+        return 0;
+    }
+
+    return 1;
+}
+
+int validate_pipe_builtins(char *cmd, char *builtins[], int num_builtins) {
+    for(int i = 0; i < num_builtins; i++) {
+        if(strcmp(cmd, builtins[i]) == 0) {
+            show_invalid();
+            return 0;
+        }
+    }
     return 1;
 }
