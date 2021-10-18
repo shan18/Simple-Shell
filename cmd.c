@@ -174,7 +174,7 @@ int run_pipe_cmd(char line_input[]) {
     if(!validate_pipe_line(line_input))
         return 1;
 
-    int pc = get_pipe_count(line_input), pipes_opened = 0, processes_started = 0, is_valid_cmd = 0;
+    int pc = get_pipe_count(line_input), pipes_opened = 0, processes_started = 0, is_valid_cmd = 1;
     int pids[pc + 1], fd[pc][2];
     char *cmds[pc + 2], *args[(MAX_INPUT_BUFFER_SIZE / 2) + 1];
 
@@ -182,8 +182,8 @@ int run_pipe_cmd(char line_input[]) {
     tokenize(line_input, "|", cmds);
 
     // Validate args before opening pipes
-    for(int i = 0; cmds[i] != NULL; i++) {
-        tokenize(cmds[i], " ", args);
+    for(int i = 0; cmds[i] != NULL && is_valid_cmd; i++) {
+        tokenize(strdup(cmds[i]), " ", args);
         is_valid_cmd = validate_args(args) && validate_pipe_args(args, i, pc + 1) && validate_pipe_builtins(args[0], builtin_str, num_builtins());
         clear_buffer(args);
     }
