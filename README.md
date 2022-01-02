@@ -18,7 +18,7 @@ $ ./shell
 
 ## Supported Features
 
-The shell supports the following features.
+The shell supports the following features
 
 ### Built-in Commands
 
