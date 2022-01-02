@@ -13,7 +13,7 @@
 void show_prompt() {
     char *buffer;
     if ((buffer = getcwd(NULL, 0)) != NULL) {
-        printf("[nyush %s]$ ", basename(buffer));
+        printf("[%s %s]$ ", getlogin(), basename(buffer));
         fflush(stdout);
     } else {
         show_invalid_msg("Failed to fetch current directory. Exiting!");
@@ -35,7 +35,7 @@ int read_line(char buffer[]) {
 
     if (input_character == EOF)
         return 0;
-    
+
     return 1;
 }
 
