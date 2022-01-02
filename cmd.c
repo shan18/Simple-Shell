@@ -122,12 +122,17 @@ int run_external(char *args[]) {
     int pid = fork();
     if (pid < 0)
         return 1;
-    
+
     CURRENT_PID = pid;
 
     if(pid == 0)
         execute_child(args);
-    waitpid(pid, NULL, WUNTRACED);
+
+    int child_status;
+    waitpid(pid, &child_status, WUNTRACED);
+    if (!WIFEXITED(child_status) && WIFSTOPPED(child_status)) {
+        signal_handler(SIGTSTP);
+    }
 
     CURRENT_PID = -1;
     return 1;
@@ -138,7 +143,7 @@ int run_cmd(char line_input[]) {
 
     char *args[MAX_INPUT_BUFFER_SIZE];
     tokenize(line_input, " ", args);
-    
+
     if(!validate_args(args))
         return 1;
 
@@ -152,7 +157,7 @@ int run_cmd(char line_input[]) {
     // Check for io redirection
     int stdin_fd = input_redirection(args);
     int stdout_fd = output_redirection(args);
-    
+
     // Run command
     int status = 1;
     if (stdin_fd != -2 && stdout_fd != -2) {
@@ -190,7 +195,7 @@ int run_pipe_cmd(char line_input[]) {
 
     for(int i = 0; cmds[i] != NULL && is_valid_cmd; i++) {
         tokenize(cmds[i], " ", args);
-        
+
         if(i < pc) {
             pipes_opened++;
             if(pipe(fd[i]) == -1)
@@ -207,9 +212,9 @@ int run_pipe_cmd(char line_input[]) {
         pids[i] = fork();
         if (pids[i] < 0)
             break;
-        
+
         CURRENT_PID = pids[i];
-        
+
         if (pids[i] > 0)
             processes_started++;
         else if (pids[i] == 0) {
@@ -229,7 +234,7 @@ int run_pipe_cmd(char line_input[]) {
             restore_stdio(stdin_fd, "stdin");
         if (stdout_fd >= 0)
             restore_stdio(stdout_fd, "stdout");
-        
+
         clear_buffer(args);
     }
 
@@ -240,8 +245,8 @@ int run_pipe_cmd(char line_input[]) {
 
     for(int i = 0; i < processes_started; i++)
         waitpid(pids[i], NULL, WUNTRACED);
-    
+
     CURRENT_PID = -1;
-    
+
     return 1;
 }
