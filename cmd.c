@@ -97,7 +97,7 @@ int builtin_jobs(char *args[]) {
 }
 
 void execute_child(char *args[]) {
-    if(strstr(args[0], "./") == args[0]) {
+    if(strstr(args[0], "./") == args[0] || strstr(args[0], "/") == args[0]) {
         if(execv(args[0], args) == -1) {
             show_invalid_msg("invalid program");
             exit(-1);
